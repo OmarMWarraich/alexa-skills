@@ -2,20 +2,12 @@ class AlexaController < ApplicationController
   skip_before_action :verify_authenticity_token
 
   def create
-    render json: plain_text("Hello, world!")
+    handler = "#{intent.camelize}Handler".constantize.new(params) rescue DefaultHandler
+    render json: handler.call
   end
 
-  def plain_text(message)
-    {
-        version: "1.0",
-        sessionAttributes: {},
-        response: {
-            shouldEndSession: false,
-            outputSpeech: {
-                type: "PlainText",
-                text: message
-            }
-        }
-    }
+  def intent
+    params.dig(:request, :intent, :name) || "Default"                  
   end
+
 end
